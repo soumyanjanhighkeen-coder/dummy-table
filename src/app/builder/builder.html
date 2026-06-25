@@ -1,0 +1,178 @@
+<!-- Top header -->
+<header class="header">
+  <div class="header-brand">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5">
+      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+    </svg>
+    <span class="header-brand-name">PageBuilder</span>
+  </div>
+
+  <div class="device-toggle">
+    @for (d of deviceOptions; track d) {
+      <button
+        class="device-btn"
+        [class.active]="device() === d"
+        (click)="setDevice(d)"
+        [title]="d">
+        @if (d === 'desktop') {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          </svg>
+        }
+        @if (d === 'tablet') {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="18" r="1"/>
+          </svg>
+        }
+        @if (d === 'mobile') {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1"/>
+          </svg>
+        }
+      </button>
+    }
+  </div>
+
+  <div class="header-actions">
+    <span class="block-count">{{ blocks().length }} block{{ blocks().length !== 1 ? 's' : '' }}</span>
+    <button class="btn-export" (click)="exportHtml()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+      </svg>
+      Export HTML
+    </button>
+  </div>
+</header>
+
+<!-- Main workspace -->
+<div class="workspace">
+
+  <!-- Left sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">Blocks</div>
+    @for (cat of paletteCategories; track cat[0]) {
+      <div class="palette-category">
+        <div class="category-label">{{ cat[0] }}</div>
+        @for (item of cat[1]; track item.type) {
+          <button class="palette-item" (click)="addBlock(item.type)">
+            <span class="palette-icon">{{ item.icon }}</span>
+            <span class="palette-label">{{ item.label }}</span>
+            <svg class="palette-add" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+            </svg>
+          </button>
+        }
+      </div>
+    }
+  </aside>
+
+  <!-- Canvas area -->
+  <main class="canvas-area">
+    <div class="canvas-wrapper" [style.max-width]="deviceWidths[device()]">
+      <iframe
+        #canvasFrame
+        class="canvas-frame"
+        sandbox="allow-scripts allow-same-origin"
+        title="Page canvas">
+      </iframe>
+    </div>
+  </main>
+
+  <!-- Right properties panel -->
+  <aside class="props-panel">
+    @if (selectedBlock(); as block) {
+      <div class="props-header">
+        <div class="props-block-type">
+          {{ block.type | uppercase }}
+        </div>
+        <div class="props-title">Properties</div>
+      </div>
+
+      <div class="props-section-label">INLINE FIELDS</div>
+      <div class="inline-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Click text in the canvas to edit inline
+      </div>
+
+      @if (propEntries().length) {
+        <div class="props-section-label" style="margin-top:20px;">STYLE</div>
+      }
+
+      @for (prop of propEntries(); track prop.key) {
+        <div class="prop-row">
+          <label class="prop-label">{{ prop.label }}</label>
+
+          @if (prop.isColor) {
+            <div class="color-row">
+              <input
+                type="color"
+                [ngModel]="prop.value"
+                (ngModelChange)="onPropChange(prop.key, $event)"
+                class="color-swatch">
+              <input
+                type="text"
+                [ngModel]="prop.value"
+                (ngModelChange)="onPropChange(prop.key, $event)"
+                class="color-text"
+                maxlength="9">
+            </div>
+          } @else if (prop.isSelect) {
+            <select
+              [ngModel]="prop.value"
+              (ngModelChange)="onPropChange(prop.key, $event)"
+              class="prop-select">
+              @for (opt of prop.selectOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+              }
+            </select>
+          } @else if (prop.isUrl) {
+            <input
+              type="url"
+              [ngModel]="prop.value"
+              (ngModelChange)="onPropChange(prop.key, $event)"
+              class="prop-input"
+              placeholder="https://...">
+          } @else {
+            <input
+              type="text"
+              [ngModel]="prop.value"
+              (ngModelChange)="onPropChange(prop.key, $event)"
+              class="prop-input">
+          }
+        </div>
+      }
+
+    } @else {
+      <div class="props-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
+          <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+          <path d="M12 7v10M7 12h10"/>
+        </svg>
+        <p>Select a block to edit its properties</p>
+      </div>
+    }
+  </aside>
+</div>
+
+<!-- Export modal -->
+@if (showExport()) {
+  <div class="modal-backdrop" (click)="showExport.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Export HTML</h2>
+        <div class="modal-actions">
+          <button class="btn-ghost" (click)="copyHtml()">Copy</button>
+          <button class="btn-primary" (click)="downloadHtml()">Download page.html</button>
+          <button class="btn-ghost modal-close" (click)="showExport.set(false)">✕</button>
+        </div>
+      </div>
+      <pre class="export-code">{{ exportCode() }}</pre>
+    </div>
+  </div>
+}
