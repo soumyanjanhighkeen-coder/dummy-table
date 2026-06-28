@@ -50,25 +50,6 @@
 <!-- Main workspace -->
 <div class="workspace">
 
-  <!-- Left sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-header">Blocks</div>
-    @for (cat of paletteCategories; track cat[0]) {
-      <div class="palette-category">
-        <div class="category-label">{{ cat[0] }}</div>
-        @for (item of cat[1]; track item.type) {
-          <button class="palette-item" (click)="addBlock(item.type)">
-            <span class="palette-icon">{{ item.icon }}</span>
-            <span class="palette-label">{{ item.label }}</span>
-            <svg class="palette-add" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
-            </svg>
-          </button>
-        }
-      </div>
-    }
-  </aside>
-
   <!-- Canvas area -->
   <main class="canvas-area">
     <div class="canvas-wrapper" [style.max-width]="deviceWidths[device()]">

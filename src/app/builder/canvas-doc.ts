@@ -262,6 +262,97 @@ export function generateCanvasDocument(): string {
     '  }',
 
     '});',
+
+    // ── Slash block menu ─────────────────────────────────
+    'var SLASH_P=[',
+    '  {type:"hero",label:"Hero",icon:"⭐",desc:"Full-width hero section"},',
+    '  {type:"features",label:"Features",icon:"▨",desc:"3-column feature grid"},',
+    '  {type:"testimonial",label:"Testimonial",icon:"❝",desc:"Quote & author"},',
+    '  {type:"cta-banner",label:"CTA Banner",icon:"★",desc:"Call-to-action banner"},',
+    '  {type:"heading",label:"Heading",icon:"H",desc:"Section heading"},',
+    '  {type:"paragraph",label:"Text",icon:"T",desc:"Text paragraph"},',
+    '  {type:"button",label:"Button",icon:"⬡",desc:"Clickable button"},',
+    '  {type:"image",label:"Image",icon:"🖼",desc:"Image block"},',
+    '  {type:"divider",label:"Divider",icon:"—",desc:"Horizontal rule"},',
+    '];',
+    'var smenu=document.getElementById("pb-slash-menu");',
+    'var slist=document.getElementById("pb-slash-list");',
+    'var sVis=false,sAct=0,sPal=[],sNode=null,sSoff=0;',
+
+    'function sRender(f){',
+    '  sPal=SLASH_P.filter(function(p){return !f||p.label.toLowerCase().indexOf(f)===0||p.type.indexOf(f)===0;});',
+    '  slist.innerHTML=sPal.map(function(p,i){',
+    '    return \'<div class="pb-si\'+(i===sAct?\' pb-sia\':\'\')+\'" data-i="\'+i+\'"><div class="pb-si-icon">\'+p.icon+\'</div>\'',
+    '      +\'<div><div class="pb-si-label">\'+p.label+\'</div><div class="pb-si-desc">\'+p.desc+\'</div></div></div>\';',
+    '  }).join("");',
+    '  slist.querySelectorAll(".pb-si").forEach(function(el){',
+    '    el.addEventListener("mousedown",function(e){e.preventDefault();sSel(sPal[+el.getAttribute("data-i")]);});',
+    '  });',
+    '}',
+
+    'function sShow(rect,f){',
+    '  sAct=0;sRender(f);',
+    '  if(!sPal.length){sHide();return;}',
+    '  smenu.style.display="block";sVis=true;',
+    '  smenu.style.top=(rect.bottom+window.scrollY+6)+"px";',
+    '  smenu.style.left=Math.max(4,rect.left)+"px";',
+    '}',
+
+    'function sHide(){sVis=false;smenu.style.display="none";sNode=null;}',
+
+    'function sMove(d){',
+    '  if(!sPal.length)return;',
+    '  sAct=(sAct+d+sPal.length)%sPal.length;',
+    '  slist.querySelectorAll(".pb-si").forEach(function(el,i){el.classList.toggle("pb-sia",i===sAct);});',
+    '  var a=slist.querySelector(".pb-sia");if(a)a.scrollIntoView({block:"nearest"});',
+    '}',
+
+    'function sSel(item){',
+    '  var sel=window.getSelection();',
+    '  if(sel&&sel.rangeCount&&sNode){',
+    '    try{',
+    '      var cur=sel.getRangeAt(0);',
+    '      var dr=document.createRange();',
+    '      dr.setStart(sNode,sSoff);',
+    '      dr.setEnd(cur.startContainer,cur.startOffset);',
+    '      dr.deleteContents();',
+    '    }catch(ex){}',
+    '  }',
+    '  sHide();',
+    '  window.parent.postMessage({type:"ADD_BLOCK_TYPE",payload:{blockType:item.type}},"*");',
+    '}',
+
+    'document.addEventListener("input",function(e){',
+    '  var el=e.target;',
+    '  if(!el||!el.getAttribute||el.getAttribute("contenteditable")!=="true")return;',
+    '  var sel=window.getSelection();',
+    '  if(!sel||!sel.rangeCount){sHide();return;}',
+    '  var r=sel.getRangeAt(0);',
+    '  var n=r.startContainer;',
+    '  if(n.nodeType!==3){sHide();return;}',
+    '  var off=r.startOffset;',
+    '  var before=n.textContent.slice(0,off);',
+    '  var m=before.match(/\\/(\\S*)$/);',
+    '  if(m){',
+    '    sNode=n;sSoff=off-m[0].length;',
+    '    var sr=document.createRange();',
+    '    sr.setStart(n,sSoff);sr.setEnd(n,sSoff+1);',
+    '    sShow(sr.getBoundingClientRect(),m[1].toLowerCase());',
+    '  }else{sHide();}',
+    '});',
+
+    'document.addEventListener("keydown",function(e){',
+    '  if(!sVis)return;',
+    '  if(e.key==="ArrowDown"){e.preventDefault();sMove(1);}',
+    '  else if(e.key==="ArrowUp"){e.preventDefault();sMove(-1);}',
+    '  else if(e.key==="Enter"){e.preventDefault();if(sPal[sAct])sSel(sPal[sAct]);}',
+    '  else if(e.key==="Escape"){e.preventDefault();sHide();}',
+    '},true);',
+
+    'document.addEventListener("mousedown",function(e){',
+    '  if(smenu&&!smenu.contains(e.target))sHide();',
+    '});',
+
     '})();',
   ].join('\n');
 
@@ -328,13 +419,37 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,san
 }
 .pb-chip-clear:hover{background:rgba(255,255,255,0.1);color:#fff;}
 
-.empty-state{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:100vh;color:#94a3b8;user-select:none;pointer-events:none;
+#pb-intro{
+  padding:100px 40px 24px;
+  font-size:1.125rem;
+  color:#1e293b;
+  line-height:1.7;
+  outline:none;
+  caret-color:#6366f1;
+  min-height:180px;
 }
-.empty-state svg{opacity:0.3;margin-bottom:20px;}
-.empty-state h2{font-size:1.375rem;margin:0 0 8px;color:#cbd5e1;font-weight:600;}
-.empty-state p{font-size:0.9rem;margin:0;}
+#pb-intro:empty::before{
+  content:attr(data-placeholder);
+  color:#c0c9d6;
+  pointer-events:none;
+  display:block;
+  font-size:1.125rem;
+}
+
+/* Slash block menu */
+#pb-slash-menu{
+  display:none;position:absolute;
+  background:#1e293b;border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.2);
+  z-index:9999;width:248px;overflow-y:auto;max-height:320px;padding:4px;
+}
+.pb-si{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:#e2e8f0;}
+.pb-si:hover,.pb-sia{background:#6366f1;}
+.pb-si-icon{width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
+.pb-si:hover .pb-si-icon,.pb-sia .pb-si-icon{background:rgba(255,255,255,0.2);}
+.pb-si-label{font-weight:500;font-size:0.875rem;font-family:-apple-system,sans-serif;}
+.pb-si-desc{font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:1px;font-family:-apple-system,sans-serif;}
+.pb-sia .pb-si-desc{color:rgba(255,255,255,0.75);}
 `;
 
   return `<!doctype html>
@@ -346,6 +461,9 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,san
 </head>
 <body>
 
+<!-- Slash block menu -->
+<div id="pb-slash-menu"><div id="pb-slash-list"></div></div>
+
 <!-- Floating text-selection chip toolbar -->
 <div id="pb-text-tb">
   ${chipButtons}
@@ -354,14 +472,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,san
 </div>
 
 <div id="canvas">
-  <div class="empty-state" id="empty-state">
-    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
-      <rect x="3" y="3" width="18" height="18" rx="2"/>
-      <path d="M3 9h18M9 21V9"/>
-    </svg>
-    <h2>Your page is empty</h2>
-    <p>Click blocks in the sidebar to add them here</p>
-  </div>
+  <div id="pb-intro" contenteditable="true" data-placeholder="Start typing, or press / to insert a block…"></div>
 </div>
 <script>${script}</script>
 </body>

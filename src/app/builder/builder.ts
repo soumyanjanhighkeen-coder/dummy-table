@@ -101,6 +101,10 @@ export class BuilderComponent implements AfterViewInit, OnDestroy {
       );
     }
 
+    if (type === 'ADD_BLOCK_TYPE') {
+      this.addBlock(payload.blockType as BlockType);
+    }
+
     if (type === 'EXPORT_RESULT') {
       this.exportCode.set(payload.html);
       this.showExport.set(true);
