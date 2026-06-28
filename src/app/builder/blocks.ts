@@ -7,7 +7,14 @@ export type BlockType =
   | 'divider'
   | 'features'
   | 'testimonial'
-  | 'cta-banner';
+  | 'cta-banner'
+  | 'faq'
+  | 'pricing'
+  | 'video'
+  | 'newsletter'
+  | 'gallery'
+  | 'form'
+  | 'code';
 
 export interface Block {
   id: string;
@@ -21,6 +28,7 @@ export interface PaletteItem {
   icon: string;
   category: string;
   defaultProps: Record<string, any>;
+  pro?: boolean;
 }
 
 // Props whose values are edited inline in the canvas via contenteditable
@@ -144,6 +152,110 @@ export const PALETTE: PaletteItem[] = [
       thickness: '1px',
     },
   },
+  {
+    type: 'faq',
+    label: 'FAQ',
+    icon: '❓',
+    category: 'Sections',
+    pro: true,
+    defaultProps: {
+      heading: 'Frequently Asked Questions',
+      bgColor: '#f8fafc',
+      headingColor: '#1e293b',
+      q1: 'What is your refund policy?',
+      a1: 'We offer a 30-day money-back guarantee on all plans.',
+      q2: 'Do you offer discounts for teams?',
+      a2: 'Yes! We have special pricing for teams of 5 or more.',
+      q3: 'Can I cancel anytime?',
+      a3: 'Absolutely. No lock-in contracts, cancel anytime.',
+    },
+  },
+  {
+    type: 'pricing',
+    label: 'Pricing',
+    icon: '💰',
+    category: 'Sections',
+    pro: true,
+    defaultProps: {
+      heading: 'Simple, transparent pricing',
+      bgColor: '#fff',
+      headingColor: '#1e293b',
+      plan1: 'Free',
+      price1: '$0',
+      plan2: 'Pro',
+      price2: '$12',
+      plan3: 'Agency',
+      price3: '$49',
+      ctaUrl: '#',
+      ctaBgColor: '#6366f1',
+    },
+  },
+  {
+    type: 'video',
+    label: 'Video',
+    icon: '▶',
+    category: 'Content',
+    defaultProps: {
+      url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+      caption: '',
+    },
+  },
+  {
+    type: 'newsletter',
+    label: 'Newsletter',
+    icon: '✉',
+    category: 'Sections',
+    defaultProps: {
+      heading: 'Stay in the loop',
+      subheading: 'Get the latest updates delivered to your inbox.',
+      bgColor: '#0f172a',
+      headingColor: '#ffffff',
+      subheadingColor: '#94a3b8',
+      ctaBgColor: '#6366f1',
+      buttonText: 'Subscribe',
+    },
+  },
+  {
+    type: 'gallery',
+    label: 'Gallery',
+    icon: '🖼',
+    category: 'Content',
+    pro: true,
+    defaultProps: {
+      img1: '',
+      img2: '',
+      img3: '',
+      img4: '',
+      img5: '',
+      img6: '',
+      borderRadius: '8px',
+    },
+  },
+  {
+    type: 'form',
+    label: 'Contact Form',
+    icon: '📝',
+    category: 'Sections',
+    pro: true,
+    defaultProps: {
+      heading: 'Get in touch',
+      subheading: "We'll get back to you within 24 hours.",
+      bgColor: '#ffffff',
+      headingColor: '#1e293b',
+      ctaBgColor: '#6366f1',
+      buttonText: 'Send message',
+    },
+  },
+  {
+    type: 'code',
+    label: 'Custom HTML',
+    icon: '</>',
+    category: 'Content',
+    pro: true,
+    defaultProps: {
+      html: '<p style="padding:20px;background:#f1f5f9;border-radius:8px;font-family:monospace;color:#475569;">Custom HTML block — edit the HTML prop to insert anything.</p>',
+    },
+  },
 ];
 
 export function generateBlockHtml(block: Block): string {
@@ -232,6 +344,120 @@ export function generateBlockHtml(block: Block): string {
     <a href="${props['ctaUrl']}" data-editable data-field="ctaText" style="background:#ffffff;color:${props['bgColor']};padding:16px 40px;border-radius:8px;text-decoration:none;font-weight:700;font-size:1.1rem;display:inline-block;">${props['ctaText']}</a>
   </div>
 </section>`;
+
+    case 'faq':
+      return `<section ${attrs} class="block block-faq" style="background:${props['bgColor']};padding:80px 40px;">
+  <div style="max-width:720px;margin:0 auto;">
+    <h2 style="text-align:center;font-size:2rem;font-weight:700;color:${props['headingColor']};margin:0 0 48px;letter-spacing:-0.5px;">${props['heading']}</h2>
+    <style>
+      .faq-details{border-bottom:1px solid #e2e8f0;padding:16px 0;cursor:pointer;}
+      .faq-details summary{font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;color:${props['headingColor']};font-size:1rem;line-height:1.5;}
+      .faq-details summary::-webkit-details-marker{display:none;}
+      .faq-details summary::after{content:"+";font-size:1.25rem;color:#6366f1;flex-shrink:0;margin-left:16px;}
+      .faq-details[open] summary::after{content:"-";}
+      .faq-details p{margin:12px 0 4px;color:#475569;line-height:1.7;font-size:0.95rem;}
+    </style>
+    <details class="faq-details">
+      <summary>${props['q1']}</summary>
+      <p>${props['a1']}</p>
+    </details>
+    <details class="faq-details">
+      <summary>${props['q2']}</summary>
+      <p>${props['a2']}</p>
+    </details>
+    <details class="faq-details">
+      <summary>${props['q3']}</summary>
+      <p>${props['a3']}</p>
+    </details>
+  </div>
+</section>`;
+
+    case 'pricing':
+      return `<section ${attrs} class="block block-pricing" style="background:${props['bgColor']};padding:80px 40px;">
+  <h2 style="text-align:center;font-size:2rem;font-weight:700;color:${props['headingColor']};margin:0 0 56px;letter-spacing:-0.5px;">${props['heading']}</h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:900px;margin:0 auto;">
+    <div style="border:1.5px solid #e2e8f0;border-radius:16px;padding:32px 24px;text-align:center;background:#fff;">
+      <div style="font-size:1rem;font-weight:600;color:#64748b;margin-bottom:12px;">${props['plan1']}</div>
+      <div style="font-size:3rem;font-weight:800;color:#1e293b;line-height:1;">${props['price1']}</div>
+      <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:24px;">/mo</div>
+      <ul style="list-style:none;padding:0;margin:0 0 32px;text-align:left;font-size:0.9rem;color:#475569;line-height:2;">
+        <li>&#10003; 5 pages</li><li>&#10003; Basic blocks</li><li>&#10003; Export HTML</li><li style="color:#cbd5e1;">&#10007; Custom domain</li>
+      </ul>
+      <a href="${props['ctaUrl']}" style="display:block;background:#f1f5f9;color:#1e293b;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;">Get started</a>
+    </div>
+    <div style="border:2px solid ${props['ctaBgColor']};border-radius:16px;padding:32px 24px;text-align:center;background:#fff;box-shadow:0 8px 30px rgba(99,102,241,0.15);transform:translateY(-4px);">
+      <div style="font-size:1rem;font-weight:600;color:${props['ctaBgColor']};margin-bottom:12px;">${props['plan2']}</div>
+      <div style="font-size:3rem;font-weight:800;color:#1e293b;line-height:1;">${props['price2']}</div>
+      <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:24px;">/mo</div>
+      <ul style="list-style:none;padding:0;margin:0 0 32px;text-align:left;font-size:0.9rem;color:#475569;line-height:2;">
+        <li>&#10003; 50 pages</li><li>&#10003; All blocks</li><li>&#10003; Export HTML</li><li>&#10003; Custom domain</li>
+      </ul>
+      <a href="${props['ctaUrl']}" style="display:block;background:${props['ctaBgColor']};color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;">Get started</a>
+    </div>
+    <div style="border:1.5px solid #e2e8f0;border-radius:16px;padding:32px 24px;text-align:center;background:#fff;">
+      <div style="font-size:1rem;font-weight:600;color:#64748b;margin-bottom:12px;">${props['plan3']}</div>
+      <div style="font-size:3rem;font-weight:800;color:#1e293b;line-height:1;">${props['price3']}</div>
+      <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:24px;">/mo</div>
+      <ul style="list-style:none;padding:0;margin:0 0 32px;text-align:left;font-size:0.9rem;color:#475569;line-height:2;">
+        <li>&#10003; Unlimited pages</li><li>&#10003; All blocks</li><li>&#10003; Export HTML</li><li>&#10003; White label</li>
+      </ul>
+      <a href="${props['ctaUrl']}" style="display:block;background:#f1f5f9;color:#1e293b;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;">Get started</a>
+    </div>
+  </div>
+</section>`;
+
+    case 'video':
+      return `<div ${attrs} class="block block-video" style="padding:40px;">
+  <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
+    <iframe src="${props['url']}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>
+  </div>
+  ${props['caption'] ? `<p style="text-align:center;color:#94a3b8;font-size:0.875rem;margin:12px 0 0;">${props['caption']}</p>` : ''}
+</div>`;
+
+    case 'newsletter':
+      return `<section ${attrs} class="block block-newsletter" style="background:${props['bgColor']};padding:80px 40px;text-align:center;">
+  <div style="max-width:560px;margin:0 auto;">
+    <h2 style="font-size:2rem;font-weight:700;color:${props['headingColor']};margin:0 0 12px;letter-spacing:-0.5px;">${props['heading']}</h2>
+    <p style="color:${props['subheadingColor']};font-size:1.05rem;line-height:1.7;margin:0 0 32px;">${props['subheading']}</p>
+    <form onsubmit="return false" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <input type="email" placeholder="Enter your email" style="flex:1;min-width:200px;padding:12px 16px;border:2px solid rgba(255,255,255,0.15);border-radius:8px;font-size:0.95rem;background:rgba(255,255,255,0.08);color:${props['headingColor']};outline:none;">
+      <button type="submit" style="background:${props['ctaBgColor']};color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:0.95rem;font-weight:600;cursor:pointer;white-space:nowrap;">${props['buttonText']}</button>
+    </form>
+  </div>
+</section>`;
+
+    case 'gallery': {
+      const br = props['borderRadius'] || '8px';
+      const cells = [1,2,3,4,5,6].map((i: number) => {
+        const src = props[`img${i}`];
+        return `<div data-gi="${i}">${src
+          ? `<img src="${src}" style="width:100%;height:200px;object-fit:cover;border-radius:${br};">`
+          : `<div style="background:#e2e8f0;height:200px;border-radius:${br};display:flex;align-items:center;justify-content:center;font-size:1.5rem;">&#128444;</div>`
+        }</div>`;
+      }).join('');
+      return `<div ${attrs} class="block block-gallery" style="padding:40px;">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+    ${cells}
+  </div>
+</div>`;
+    }
+
+    case 'form':
+      return `<section ${attrs} class="block block-form" style="background:${props['bgColor']};padding:80px 40px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <h2 style="font-size:2rem;font-weight:700;color:${props['headingColor']};margin:0 0 8px;letter-spacing:-0.5px;">${props['heading']}</h2>
+    <p style="color:#64748b;font-size:1rem;line-height:1.6;margin:0 0 32px;">${props['subheading']}</p>
+    <form onsubmit="return false" style="display:flex;flex-direction:column;gap:16px;">
+      <input type="text" placeholder="Your name" style="border:2px solid #e2e8f0;border-radius:8px;padding:12px 16px;font-size:0.95rem;width:100%;box-sizing:border-box;outline:none;font-family:inherit;">
+      <input type="email" placeholder="Email address" style="border:2px solid #e2e8f0;border-radius:8px;padding:12px 16px;font-size:0.95rem;width:100%;box-sizing:border-box;outline:none;font-family:inherit;">
+      <textarea rows="4" placeholder="Your message" style="border:2px solid #e2e8f0;border-radius:8px;padding:12px 16px;font-size:0.95rem;width:100%;box-sizing:border-box;resize:vertical;outline:none;font-family:inherit;"></textarea>
+      <button type="submit" style="background:${props['ctaBgColor']};color:#fff;border:none;padding:14px 32px;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;align-self:flex-start;">${props['buttonText']}</button>
+    </form>
+  </div>
+</section>`;
+
+    case 'code':
+      return `<div ${attrs} class="block block-code" style="padding:16px 40px;">${props['html']}</div>`;
 
     default:
       return `<div ${attrs} class="block" style="padding:20px 40px;"><p>Unknown block: ${type}</p></div>`;

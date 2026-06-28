@@ -37,12 +37,48 @@
   </div>
 
   <div class="header-actions">
+    <!-- Brand color picker -->
+    <div class="theme-row" title="Brand color">
+      <label class="theme-label">
+        <input type="color" [ngModel]="brandColor()" (ngModelChange)="onBrandColor($event)" class="theme-swatch">
+      </label>
+    </div>
+
+    <!-- Undo / Redo -->
+    <div class="header-history">
+      <button class="btn-history" (click)="undo()" [disabled]="!canUndo()" title="Undo (Ctrl+Z)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M3 10h10a8 8 0 010 16H5M3 10L7 6M3 10L7 14"/>
+        </svg>
+      </button>
+      <button class="btn-history" (click)="redo()" [disabled]="!canRedo()" title="Redo (Ctrl+Y)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 10H11a8 8 0 000 16h8M21 10L17 6M21 10L17 14"/>
+        </svg>
+      </button>
+    </div>
+
     <span class="block-count">{{ blocks().length }} block{{ blocks().length !== 1 ? 's' : '' }}</span>
+
+    <!-- Templates button -->
+    <button class="btn-templates" (click)="showTemplates.set(true)">
+      Templates
+    </button>
+
+    <!-- Export button -->
     <button class="btn-export" (click)="exportHtml()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
       </svg>
-      Export HTML
+      Export
+    </button>
+
+    <!-- Publish button -->
+    <button class="btn-publish" (click)="openPublish()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+      Publish
     </button>
   </div>
 </header>
@@ -113,12 +149,18 @@
               }
             </select>
           } @else if (prop.isUrl) {
-            <input
-              type="url"
-              [ngModel]="prop.value"
-              (ngModelChange)="onPropChange(prop.key, $event)"
-              class="prop-input"
-              placeholder="https://...">
+            <div class="upload-row">
+              <input
+                type="url"
+                [ngModel]="prop.value"
+                (ngModelChange)="onPropChange(prop.key, $event)"
+                class="prop-input"
+                placeholder="https://... or upload">
+              <label class="btn-upload" title="Upload image">
+                📎
+                <input type="file" accept="image/*" style="display:none" (change)="onImageUpload(prop.key, $event)">
+              </label>
+            </div>
           } @else {
             <input
               type="text"
@@ -154,6 +196,108 @@
         </div>
       </div>
       <pre class="export-code">{{ exportCode() }}</pre>
+    </div>
+  </div>
+}
+
+<!-- Publish modal -->
+@if (showPublish()) {
+  <div class="modal-backdrop" (click)="showPublish.set(false)">
+    <div class="modal publish-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Publish your page</h2>
+        <button class="btn-ghost modal-close" (click)="showPublish.set(false)">✕</button>
+      </div>
+      <div class="publish-body">
+        <div class="publish-section">
+          <h3 class="publish-section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Download
+          </h3>
+          <p class="publish-desc">Download your page as a standalone HTML file you can host anywhere.</p>
+          <div class="publish-actions">
+            <button class="btn-primary" (click)="downloadHtml()">Download page.html</button>
+            <button class="btn-ghost" (click)="copyHtml()">Copy HTML</button>
+          </div>
+        </div>
+        <div class="publish-divider"></div>
+        <div class="publish-section">
+          <h3 class="publish-section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            Deploy to Netlify
+          </h3>
+          <p class="publish-desc">Drag your downloaded HTML file to Netlify Drop to publish instantly — free, no account required.</p>
+          <a class="btn-netlify" href="https://app.netlify.com/drop" target="_blank" rel="noopener">
+            Open Netlify Drop
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Templates modal -->
+@if (showTemplates()) {
+  <div class="modal-backdrop" (click)="showTemplates.set(false)">
+    <div class="modal templates-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Start from a template</h2>
+        <button class="btn-ghost modal-close" (click)="showTemplates.set(false)">✕</button>
+      </div>
+      <div class="templates-grid">
+        @for (tpl of templates; track tpl.name) {
+          <div class="template-card" (click)="applyTemplate(tpl)">
+            <div class="template-icon">{{ tpl.icon }}</div>
+            <div class="template-name">{{ tpl.name }}</div>
+            <div class="template-desc">{{ tpl.description }}</div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Upgrade modal -->
+@if (showUpgrade()) {
+  <div class="modal-backdrop" (click)="showUpgrade.set(false)">
+    <div class="modal upgrade-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Unlock Pro blocks</h2>
+        <button class="btn-ghost modal-close" (click)="showUpgrade.set(false)">✕</button>
+      </div>
+      <div class="upgrade-body">
+        <div class="upgrade-icon">🔒</div>
+        <p class="upgrade-text">This block is available on the Pro plan. Upgrade to unlock all Pro blocks including FAQ, Pricing, Gallery, Contact Form, and Custom HTML.</p>
+        <div class="upgrade-plans">
+          <div class="upgrade-plan">
+            <div class="upgrade-plan-name">Free</div>
+            <div class="upgrade-plan-price">$0<span>/mo</span></div>
+            <ul class="upgrade-plan-features">
+              <li>Basic blocks</li>
+              <li>Export HTML</li>
+              <li style="color:#cbd5e1;">Pro blocks</li>
+            </ul>
+          </div>
+          <div class="upgrade-plan upgrade-plan-pro">
+            <div class="upgrade-plan-badge">POPULAR</div>
+            <div class="upgrade-plan-name">Pro</div>
+            <div class="upgrade-plan-price">$12<span>/mo</span></div>
+            <ul class="upgrade-plan-features">
+              <li>All blocks</li>
+              <li>Export HTML</li>
+              <li>FAQ, Pricing, Gallery</li>
+            </ul>
+          </div>
+        </div>
+        <button class="btn-upgrade" (click)="showUpgrade.set(false)">Get Pro — $12/mo</button>
+      </div>
     </div>
   </div>
 }
