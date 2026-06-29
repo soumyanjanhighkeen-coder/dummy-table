@@ -258,6 +258,16 @@ export const PALETTE: PaletteItem[] = [
   },
 ];
 
+export function toEmbedUrl(url: string): string {
+  // youtube.com/watch?v=ID or with extra params
+  const watch = url.match(/(?:youtube\.com\/watch\?(?:.*&)?v=)([^&]+)/);
+  if (watch) return `https://www.youtube.com/embed/${watch[1]}`;
+  // youtu.be/ID
+  const short = url.match(/youtu\.be\/([^?&]+)/);
+  if (short) return `https://www.youtube.com/embed/${short[1]}`;
+  return url;
+}
+
 export function generateBlockHtml(block: Block): string {
   const { id, type, props } = block;
   const safeProps = JSON.stringify(props).replace(/"/g, '&quot;');
@@ -409,7 +419,7 @@ export function generateBlockHtml(block: Block): string {
     case 'video':
       return `<div ${attrs} class="block block-video" style="padding:40px;">
   <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
-    <iframe src="${props['url']}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>
+    <iframe src="${toEmbedUrl(props['url'])}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>
   </div>
   ${props['caption'] ? `<p style="text-align:center;color:#94a3b8;font-size:0.875rem;margin:12px 0 0;">${props['caption']}</p>` : ''}
 </div>`;

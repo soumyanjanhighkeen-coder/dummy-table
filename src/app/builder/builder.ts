@@ -359,6 +359,14 @@ export class BuilderComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    if (blockType === 'video' && key === 'url') {
+      this.sendToCanvas({
+        type: 'UPDATE_VIDEO_URL',
+        payload: { id: blockId, url: value },
+      });
+      return;
+    }
+
     if (key === 'src' || key === 'alt' || key === 'borderRadius') {
       const block = this.selectedBlock();
       if (!block) return;
